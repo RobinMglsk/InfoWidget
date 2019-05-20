@@ -21,8 +21,23 @@ String settings::read(String id){
 }
 
 void settings::write(String id,String value){
+  
   createConfig();
-  File f = SPIFFS.open(myConfig, "w");
+
+  String lines;
+  String line;
+
+  File f = SPIFFS.open(myConfig, "r");
+  while(f.available()) {
+     line = f.readStringUntil('\n');
+     if (line.indexOf(id+"=") == -1) {
+      lines += line+"\n";
+     }
+  }
+  f.close();
+
+  f = SPIFFS.open(myConfig, "w");
+  f.println(lines);
   f.println(id+"="+value);
   f.close();
   Serial.print("Wrote value "+value+" for "+id);
