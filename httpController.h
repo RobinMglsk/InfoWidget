@@ -1,5 +1,6 @@
 #pragma once
 #include <ESP8266WiFi.h>
+#include "FS.h"
 
 class httpController {
 
@@ -11,5 +12,6 @@ class httpController {
   public:
     httpController(int i);
     String getIndex();
+    String getFile(String path);
   
 };

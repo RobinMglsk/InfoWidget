@@ -15,4 +15,14 @@ String httpController::getIndex(){
     return response+foot;
 }
 
+String httpController::getFile(String path){
+  File f = SPIFFS.open(path, "r");
+  String data;
+  while(f.available()) {
+     data += f.readStringUntil('\n');
+  }
+  f.close();
+  return data;
+}
+
 

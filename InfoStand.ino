@@ -51,7 +51,9 @@ void setup() {
     //ROUTES
     server.on("/", HTTP_GET, displayIndex);
     server.on("/", HTTP_POST, displayMsg);
-    server.on("/test", HTTP_GET, displayIndex);
+    server.on("/test", HTTP_GET, [](){ sendFile("/index.html"); });
+    server.on("/style/style.css", HTTP_GET, [](){ sendFile("/style/style.css"); });
+    server.on("/js/app.js", HTTP_GET, [](){ sendFile("/js/app.js"); });
     
     server.onNotFound(error404);
     server.begin();
@@ -68,6 +70,8 @@ void setup() {
 
   Serial.print("Settings test: ");
   Serial.println(sett.read("test"));
+  Serial.println(sett.read("test2"));
+  Serial.println(sett.read("test3"));
 }
 
 void loop() {
@@ -130,6 +134,8 @@ void displayMsg(){
   title.toUpperCase();
 
   sett.write("test", title);
+  sett.write("test2", title+"2");
+  sett.write("test3", title+"3");
 
   display.clear();
   display.setTextAlignment(TEXT_ALIGN_CENTER);
@@ -147,6 +153,20 @@ void displayMsg(){
   server.send(200, "text/html", httpc.getIndex());
 }
 
+void sendFile(String path){
+
+  Serial.print("Sending file: "+path);
+  server.sendHeader("Cache-Control", "no-cache, no-store");
+  server.sendHeader("Pragma", "no-cache");
+  server.sendHeader("Expires", "-1");
+  //server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+  File f = SPIFFS.open(path+".gz", "r");
+  server.streamFile(f, getContentTypeGz(path+".gz"));
+  f.close();
+  Serial.println("...done");
+
+ }
+
 void error404() {
   // Send them back to the Root Directory
   server.sendHeader("Cache-Control", "no-cache, no-store");
@@ -155,3 +175,20 @@ void error404() {
   server.send(404, "text/plain", "404");
   server.client().stop();
 }
+
+String getContentTypeGz(String filename){
+if(server.hasArg("download")) return "application/octet-stream";
+else if(filename.endsWith(".htm.gz")) return "text/html";
+else if(filename.endsWith(".html.gz")) return "text/html";
+else if(filename.endsWith(".css.gz")) return "text/css";
+else if(filename.endsWith(".js.gz")) return "application/javascript";
+else if(filename.endsWith(".png.gz")) return "image/png";
+else if(filename.endsWith(".gif.gz")) return "image/gif";
+else if(filename.endsWith(".jpg.gz")) return "image/jpeg";
+else if(filename.endsWith(".ico.gz")) return "image/x-icon";
+else if(filename.endsWith(".xml.gz")) return "text/xml";
+else if(filename.endsWith(".pdf.gz")) return "application/x-pdf";
+else if(filename.endsWith(".zip.gz")) return "application/x-zip";
+else if(filename.endsWith(".gz")) return "application/x-gzip";
+return "application/x-gzip";
+} 
